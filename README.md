@@ -8,3 +8,4 @@
 [Kubernetes:kube-apiserver 和 etcd 的交互](./kubernetes/Kubernetes:kube-apiserver%20和%20etcd%20的交互.md)  
 [Kubernetes:kube-apiserver 之认证](./kubernetes/Kubernetes:kube-apiserver%20之认证.md)  
 [Kubernetes:kube-apiserver 之鉴权](./kubernetes/Kubernetes:kube-apiserver%20之鉴权.md)  
+[Kubernetes:kube-apiserver 之准入](./kubernetes/Kubernetes:kube-apiserver%20之准入.md)  
