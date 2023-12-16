@@ -1,7 +1,8 @@
+上接 [Kubernetes: client-go 源码剖析（二）](https://www.cnblogs.com/xingzheanan/p/17904625.html)
 
 ## 2.3 运行 `informer`
 
-运行 `informer` 将 `Reflector`，`informer` 和 `indexer` 组件关联起来实现 `informer` 流程图的流程。
+运行 `informer` 将 `Reflector`，`informer` 和 `indexer` 组件关联以实现 `informer` 流程图的流程。
 
 ### 2.3.1 Reflector List&Watch
 
@@ -39,7 +40,6 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 	}()
 
     ...
-
     // goroutine 运行 processor
 	wg.StartWithChannel(processorStopCh, s.processor.run)
 
@@ -49,7 +49,7 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 }
 ```
 
-运行 `informer`。首先，创建队列 `Delta FIFO`：
+首先，创建队列 `Delta FIFO`：
 ```
 func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 	...
@@ -63,10 +63,7 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 }
 
 func NewDeltaFIFOWithOptions(opts DeltaFIFOOptions) *DeltaFIFO {
-	if opts.KeyFunction == nil {
-		opts.KeyFunction = MetaNamespaceKeyFunc
-	}
-
+	...
 	f := &DeltaFIFO{
 		items:        map[string]Deltas{},
 		queue:        []string{},
@@ -82,9 +79,10 @@ func NewDeltaFIFOWithOptions(opts DeltaFIFOOptions) *DeltaFIFO {
 ```
 
 该队列中存储的是 `Delta` 资源对象，其存储结构为：  
+
 ![client-go Delta FIFO](img/Delta%20FIFO.png)
 
-为什么队列要设计成这个样子？因为 `informer` 在读取队列时，根据 `items` 的 `action` 调用 `EventHandler` 中对应的回调函数。
+为什么队列要设计成这个样子？因为 `informer` 在读取队列时，根据 `items` 的 action type 调用对应 `EventHandler` 的回调函数。
 
 接下来，实例化 `informer` 的 `controller` 对象，并且调用 `controller.Run` 运行 `controller`：
 ```
@@ -128,7 +126,7 @@ func NewReflectorWithOptions(lw ListerWatcher, expectedType interface{}, store S
 }
 ```
 
-继续进入 `wg.StartWithChannel(stopCh, r.Run)` 中运行 `Reflector.Run`：
+继续进入 `wg.StartWithChannel` 中运行 `Reflector.Run`：
 ```
 func (r *Reflector) Run(stopCh <-chan struct{}) {
 	wait.BackoffUntil(func() {
@@ -141,7 +139,6 @@ func (r *Reflector) Run(stopCh <-chan struct{}) {
 
 func (r *Reflector) ListAndWatch(stopCh <-chan struct{}) error {
 	...
-
 	if fallbackToList {
 		err = r.list(stopCh)
 		if err != nil {
@@ -190,7 +187,6 @@ func (p *ListPager) ListWithAlloc(ctx context.Context, options metav1.ListOption
 
 func (p *ListPager) list(ctx context.Context, options metav1.ListOptions, allocNew bool) (runtime.Object, bool, error) {
 	...
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -206,7 +202,7 @@ func (p *ListPager) list(ctx context.Context, options metav1.ListOptions, allocN
 }
 ```
 
-`list` 方法内调用 `p.PageFn` 获得资源对象 `obj`，调用的 `p.PageFn` 实际调用的是 `Reflector.listerWatcher` 对象的 `List` 方法：
+`list` 方法内调用 `p.PageFn` 获得资源对象 `obj`，调用 `p.PageFn` 实际调用的是 `Reflector.listerWatcher` 对象的 `List` 方法：
 ```
 func (lw *ListWatch) List(options metav1.ListOptions) (runtime.Object, error) {
 	return lw.ListFunc(options)
@@ -231,7 +227,7 @@ func NewFilteredPodInformer(client kubernetes.Interface, namespace string, resyn
 
 ### 2.3.2 Reflector Add Object
 
-`client-go informer` 流程的第一步实现了，那么第二步在哪呢？我们继续看 `Reflector.list` 方法：
+`client-go informer` 流程的第一步实现了，那么第二步在哪呢？带着这个问题，我们继续看 `Reflector.list` 方法：
 ```
 func (r *Reflector) list(stopCh <-chan struct{}) error {
 	...
@@ -282,13 +278,13 @@ func (f *DeltaFIFO) Replace(list []interface{}, _ string) error {
 }
 ```
 
-`Reflector.syncWith` 调用 `Reflector.store` 的 `Replace` 方法将 list 的资源对象添加到 `DeltaFIFO` 队列中，实现 `informer` 流程的第二步。
+`Reflector.syncWith` 调用 `Reflector.DeltaFIFO` 的 `Replace` 方法将 list 的资源对象添加到 `DeltaFIFO` 队列中，实现 `informer` 流程的第二步。
 
 watch 资源和 list 资源的流程类似，这里就不过多介绍了。
 
 ### 2.3.3 informer Pop Object
 
-`Reflector` 作为生产者将 list&watch 的资源加入到 `Delta FIFO` 队列中，那么消费者在哪里使用 `Delta FIFO` 的资源呢？
+`Reflector` 作为生产者将 list&watch 的资源添加到 `Delta FIFO` 队列，那么消费者在哪里使用 `Delta FIFO` 的资源呢？
 
 `client-go` 在 `controller.Run` 中的 `controller.processLoop` 处理 `Delta FIFO` 的资源：
 ```
@@ -337,7 +333,7 @@ func (f *DeltaFIFO) Pop(process PopProcessFunc) (interface{}, error) {
 }
 ```
 
-`DeltaFIFO.Pop` 会循环读取队列中的资源，当队列无资源时进入阻塞状态。如果队列中有资源，每次读取队列的首元素，删除队列中读取的首元素，然后调用回调函数 `PopProcessFunc` 处理首元素：
+`DeltaFIFO.Pop` 会循环读取队列中的资源，当队列无资源时进入阻塞状态。如果队列中有资源，每次读取队列的首元素，删除队列中读取的首元素，然后调用回调函数 `PopProcessFunc` 处理读取的首元素：
 ```
 err := process(item, isInInitialList)
 
@@ -353,13 +349,13 @@ func (s *sharedIndexInformer) HandleDeltas(obj interface{}, isInInitialList bool
 }
 ```
 
-调用回调函数 `PopProcessFunc` 实际执行的是 `sharedIndexInformer.HandleDeltas` 方法，在该方法内处理队列读取的资源。
+调用回调函数 `PopProcessFunc` 实际调用的是 `sharedIndexInformer.HandleDeltas` 方法，在该方法内处理从队列读取到的资源。
 
 至此，实现了 `informer` 流程图的第三步。
 
 ### 2.3.4 informer Add and Store Object
 
-`informer` 在处理资源对象时，将资源送给 `indexer` 处理，如第四步所示。继续看 `sharedIndexInformer.HandleDeltas` 的函数 `processDeltas`：
+继续看 `sharedIndexInformer.HandleDeltas` 的函数 `processDeltas`：
 ```
 func processDeltas(handler ResourceEventHandler, clientState Store, deltas Deltas, isInInitialList bool,) error {
 	for _, d := range deltas {
@@ -391,7 +387,7 @@ func processDeltas(handler ResourceEventHandler, clientState Store, deltas Delta
 
 在 `processDeltas` 中根据不同的 Delta Type 执行不同的 case。我们以 `Added` type 为例查看处理流程。
 
-首先，`clientState.Get` 将从本地 `indexer` 存储中读取本地资源是否存在：
+首先，`clientState.Get` 从本地 `indexer` 存储中读取资源，并判断资源是否存在：
 ```
 // clientState.Get get 资源 obj
 func (c *cache) Get(obj interface{}) (item interface{}, exists bool, err error) {
@@ -413,11 +409,10 @@ func (c *threadSafeMap) Get(key string) (item interface{}, exists bool) {
 }
 ```
 
-如果资源不存在，进入 `clientState.Add(obj)`:
+如果资源不存在，进入 `cache.Add`:
 ```
 func (c *cache) Add(obj interface{}) error {
 	...
-
     // 添加资源到 indexer
 	c.cacheStorage.Add(key, obj)
 	return nil
@@ -436,11 +431,13 @@ func (c *threadSafeMap) Update(key string, obj interface{}) {
 }
 ```
 
-在 `clientState.Add(obj)` 中将队列 `Delta FIFO` 读取的资源存入 `indexer` 中。至此完成了 `informer` 流程图的第四步和第五步。
+在 `clientState.Add` 中将队列 `Delta FIFO` 读取的资源存入 `indexer` 中。
+
+至此，完成了 `informer` 流程图的第四步和第五步。
 
 ### 2.3.5 Event Handler
 
-将资源存入 `indexer` 后继续往下看 `handler.OnAdd(obj, isInInitialList)` 是怎么处理 Pop 的资源的：
+将资源存入 `indexer` 后继续往下看 `sharedIndexInformer.OnAdd` 是怎么处理 Pop 出的资源的：
 ```
 func (s *sharedIndexInformer) OnAdd(obj interface{}, isInInitialList bool) {
 	...
@@ -473,7 +470,9 @@ func (p *processorListener) add(notification interface{}) {
 }
 ```
 
-可以看到，Pop 的资源被加入 `processorListener.addCh` 通道。通道的另一端是哪里在处理呢？
+可以看到，Pop 的资源被加入 `processorListener.addCh` 通道。
+
+那么，通道的另一端是哪里在处理呢？  
 
 答案在 `sharedIndexInformer.Run` 中的 `sharedProcessor.run`:
 ```
@@ -494,7 +493,6 @@ func (p *sharedProcessor) run(stopCh <-chan struct{}) {
 		p.listenersStarted = true
 	}()
 	<-stopCh
-
 	...
 }
 ```
@@ -521,18 +519,19 @@ func (p *processorListener) run() {
 				utilruntime.HandleError(fmt.Errorf("unrecognized notification: %T", next))
 			}
 		}
-		// the only way to get here is if the p.nextCh is empty and closed
 		close(stopCh)
 	}, 1*time.Second, stopCh)
 }
 ```
 
-`run` 方法从 `processorListener.nextCh` 通道中读取资源对象，根据资源对象的类型决定执行哪个 case。
+`listener.run` 从 `processorListener.nextCh` 通道中读取资源对象，根据资源对象的类型决定执行哪个 case。
 
 前面通道的一端将 `addNotification` 加入到 `processorListener` 的 `addCh` 通道 `p.addCh <- notification`。  
 这里 `processorListener` 根据 `nextCh` 通道的资源执行相应的 case。
 
-那么 `addCh` 到 `nextCh` 的关联在哪里呢？我们看 `processorListener.pop`：
+那么 `addCh` 和 `nextCh` 的关联在哪里呢？  
+
+我们看 `processorListener.pop`：
 ```
 func (p *processorListener) pop() {
 	defer utilruntime.HandleCrash()
@@ -565,7 +564,48 @@ func (p *processorListener) pop() {
 }
 ```
 
-`processorListener.pop` 的逻辑比较复杂。核心在通过 `nextCh = p.nextCh` 将 `processorListener.nextCh` 和函数内通道 `nextCh` 关联起来。因此 `processorListener` 的 `addCh` 通道中的数据会传递给 `nextCh`。
+`processorListener.pop` 的逻辑比较复杂，这里不过多介绍。重点在通过 `nextCh = p.nextCh` 将 `processorListener.nextCh` 和函数内通道 `nextCh` 关联，从而实现 `processorListener.addCh` 通道到 `processorListener.nextCh` 通道的数据传递。
 
+了解了通道间的数据传递。我们以 `ResourceEventHandlerFuncs.OnAdd` 为例看 `client-go` 是怎么调用 `EventHandler` 的：
+```
+func (p *processorListener) run() {
+	...
+	wait.Until(func() {
+		for next := range p.nextCh {
+			switch notification := next.(type) {
+			case updateNotification:
+				...
+			case addNotification:
+				p.handler.OnAdd(notification.newObj, notification.isInInitialList)
+				...
+			}
+			...
+		}
+	})
+}
 
- 
+func (r ResourceEventHandlerFuncs) OnAdd(obj interface{}, isInInitialList bool) {
+	if r.AddFunc != nil {
+		r.AddFunc(obj)
+	}
+}
+
+func main() {
+	...
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			mObj := obj.(v1.Object)
+			log.Printf("New Pod Added to Store: %s", mObj.GetName())
+		},
+		...
+	})
+}
+```
+
+可以看到，最终通过回调函数执行我们定义的 `AddFunc` handler。
+
+至此，实现了 `informer` 流程图的第六步。
+
+## 3. 总结
+
+我们通过两篇文章从源码角度介绍了 `client-go` 的流程。下面要开始 `kube-schduler` 的学习了，敬请期待...
