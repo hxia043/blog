@@ -9,3 +9,5 @@
 [Kubernetes:kube-apiserver 之认证](./kubernetes/Kubernetes:kube-apiserver%20之认证.md)  
 [Kubernetes:kube-apiserver 之鉴权](./kubernetes/Kubernetes:kube-apiserver%20之鉴权.md)  
 [Kubernetes:kube-apiserver 之准入](./kubernetes/Kubernetes:kube-apiserver%20之准入.md)  
+[Kubernetes: client-go 源码剖析（一）](./kubernetes/Kubernetes:%20client-go%20源码剖析（一）.md)  
+[Kubernetes: client-go 源码剖析（二）](./kubernetes/Kubernetes:%20client-go%20源码剖析（二）.md)  
