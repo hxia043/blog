@@ -1,4 +1,4 @@
-上接 [Kubernetes: client-go 源码剖析（二）](https://www.cnblogs.com/xingzheanan/p/17904625.html)
+上接 [Kubernetes: client-go 源码剖析（一）](https://www.cnblogs.com/xingzheanan/p/17904625.html)
 
 ## 2.3 运行 `informer`
 
