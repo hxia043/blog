@@ -14,3 +14,4 @@
 [Kubernetes:kube-scheduler 源码分析](./kubernetes/Kubernetes:kube-scheduler%20源码分析.md)  
 [[译] kubernetes:kube-scheduler 调度器代码结构概述](./kubernetes/[译]%20kubernetes:kube-scheduler%20调度器代码结构概述.md)  
 [Kubernetes leader election 源码分析](./kubernetes/Kubernetes%20leader%20election%20源码分析.md)  
+[Kubernetes: kube-controller-manager 源码分析](./kubernetes/Kubernetes:%20kube-controller-manager%20源码分析.md)
