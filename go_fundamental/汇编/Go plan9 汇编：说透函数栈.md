@@ -67,8 +67,8 @@ TEXT main.main(SB) /root/go/src/foundation/ex4/ex4.go
 
 ## 1.2 函数调用
 
-在 `main` 函数中实现两数之和，我们没办法看到函数调用的过程。  
-接下来，定义 `sum` 函数实现两数之和，在 `main` 函数中调用 `sum`。重点看函数在调用时做了什么。
+在 main 函数中实现两数之和，我们没办法看到函数调用的过程。  
+接下来，定义 sum 函数实现两数之和，在 main 函数中调用 sum。重点看函数在调用时做了什么。
 
 示例如下：
 ```
@@ -129,9 +129,9 @@ TEXT main.main(SB) /root/go/src/foundation/ex6/ex6.go
 ```
 
 继续往下分析指令的执行过程：  
-1）`sub rsp, 0x28`: `rsp` 的内存地址减 `0x28`，意味着 `main` 函数开辟 `0x28` 字节的栈空间。  
-2）`mov qword ptr [rsp+0x18], 0x1` 和 `mov qword ptr [rsp+0x10], 0x2`：将 `0x1` 和 `0x2` 分别放到内存地址 `[rsp+0x18]` 和 `[rsp+0x10]` 中。  
-3）`mov eax, 0x1` 和 `mov ebx, 0x2`：将 `0x1` 和 `0x2` 分别放到寄存器 `eax` 和 `ebx` 中。  
+1) `sub rsp, 0x28`: `rsp` 的内存地址减 `0x28`，意味着 main 函数开辟 `0x28` 字节的栈空间。  
+2) `mov qword ptr [rsp+0x18], 0x1` 和 `mov qword ptr [rsp+0x10], 0x2`：将 `0x1` 和 `0x2` 分别放到内存地址 `[rsp+0x18]` 和 `[rsp+0x10]` 中。  
+3) `mov eax, 0x1` 和 `mov ebx, 0x2`：将 `0x1` 和 `0x2` 分别放到寄存器 `eax` 和 `ebx` 中。  
 
 跳转到 `0x45feea` 指令：
 ```
