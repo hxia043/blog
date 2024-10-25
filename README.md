@@ -53,6 +53,10 @@ The Github blog has also sync to here: https://www.cnblogs.com/xingzheanan : )
 - [Go 互斥锁 Mutex 源码分析(一)](./Go/锁/Go%20互斥锁%20Mutex%20源码分析(一).md)
 - [Go 互斥锁 Mutex 源码分析(二)](./Go/锁/Go%20互斥锁%20Mutex%20源码分析(二).md)
 
+### 缓存
+
+- [缓存 LRU 和 LFU 实现](../blog/Go/缓存/缓存%20LRU%20和%20LFU%20实现.md)
+
 ## design pattern
 
 - [创建型：单例模式](./design_pattern/创建型：单例模式.md)
