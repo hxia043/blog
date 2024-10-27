@@ -55,7 +55,7 @@ The Github blog has also sync to here: https://www.cnblogs.com/xingzheanan : )
 
 ### 缓存
 
-- [缓存 LRU 和 LFU 实现](../blog/Go/缓存/缓存%20LRU%20和%20LFU%20实现.md)
+- [缓存 LRU 和 LFU 实现](./Go/缓存/缓存%20LRU%20和%20LFU%20实现.md)
 
 ## design pattern
 

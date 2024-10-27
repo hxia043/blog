@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"go-interview/cache"
-	"math/rand"
+	"go-interview/preempt"
+	"runtime"
 	"time"
 )
 
@@ -74,12 +73,21 @@ func main() {
 		wg.Wait()
 	*/
 
-	rand.Seed(time.Now().UnixNano())
-	fmt.Println("Starting cache avalanche simulation...")
+	/*
+		rand.Seed(time.Now().UnixNano())
+		fmt.Println("Starting cache avalanche simulation...")
 
-	for i := 0; i < 5; i++ {
-		fmt.Printf("\n--- Iteration %d ---\n", i+1)
-		cache.SimulateCacheAvalanche()
-		time.Sleep(3 * time.Second) // 模拟每次缓存过期后重新请求
+		for i := 0; i < 5; i++ {
+			fmt.Printf("\n--- Iteration %d ---\n", i+1)
+			cache.SimulateCacheAvalanche()
+			time.Sleep(3 * time.Second) // 模拟每次缓存过期后重新请求
+		}
+	*/
+
+	threads := runtime.GOMAXPROCS(0)
+	for i := 0; i < threads; i++ {
+		go preempt.Process()
 	}
+
+	time.Sleep(10 * time.Second)
 }
