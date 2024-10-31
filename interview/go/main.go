@@ -1,10 +1,6 @@
 package main
 
-import (
-	"go-interview/preempt"
-	"runtime"
-	"time"
-)
+import "go-interview/channel"
 
 func main() {
 	//channel.Print()
@@ -84,10 +80,14 @@ func main() {
 		}
 	*/
 
-	threads := runtime.GOMAXPROCS(0)
-	for i := 0; i < threads; i++ {
-		go preempt.Process()
-	}
+	/*
+		threads := runtime.GOMAXPROCS(0)
+		for i := 0; i < threads; i++ {
+			go preempt.Process()
+		}
 
-	time.Sleep(10 * time.Second)
+		time.Sleep(10 * time.Second)
+	*/
+
+	channel.Channel2()
 }
